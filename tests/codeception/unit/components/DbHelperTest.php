@@ -12,7 +12,7 @@ class DbHelperTest extends TestCase
 
     public function testActions001()
     {
-        $cmd = DbHelper::createMultipleUpdateCommand('the_table',[],'id');
+        $cmd = DbHelper::createMultipleUpdateCommand('user',[],'id');
         $this->assertInstanceOf('yii\db\Command', $cmd);
     }
 }
