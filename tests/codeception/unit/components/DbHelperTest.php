@@ -30,7 +30,7 @@ class DbHelperTest extends TestCase
         $this->assertObjectNotHasAttribute('updateCount', $return);
         $this->assertObjectHasAttribute('insertCount', $return);
         $this->assertEquals(10, $return->insertCount);
-        $this->assertObjectHasAttribute('lastId', $return->lastId);
+        $this->assertObjectHasAttribute('lastId', $return);
         echo 'Inserted 10 users with lastId='.$return->lastId;
     }
 }
