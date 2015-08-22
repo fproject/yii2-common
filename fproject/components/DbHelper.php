@@ -63,9 +63,10 @@ class DbHelper
      *      'updated' => [<array of updated models>]
      *      ]
      * ```
-     * @return array an array of two elements: the first is the last model ID (auto-incremental primary key)
-     * inserted, the second is the number of rows inserted.
-     * If there's no row inserted, the return value is null.
+     * @return stdClass An instance of stdClass that has of two fields:
+     * - The 'lastId' field is the last model ID (auto-incremental primary key) inserted.
+     * - The 'insertCount' is the number of rows inserted.
+     * - The 'updateCount' is the number of rows updated.
      */
     public static function batchSave($models, $attributeNames=[], $mode=self::SAVE_MODE_AUTO, &$returnModels=null)
     {
