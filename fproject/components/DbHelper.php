@@ -22,6 +22,7 @@ use Yii;
 use yii\db\Connection;
 use stdClass;
 use yii\db\Exception;
+use yii\db\ActiveRecord;
 
 /**
  * The Database Helper class
@@ -46,7 +47,7 @@ class DbHelper
      * Save a list of data to a table, each row data may be inserted or updated depend on its existence.
      * This method could be used to achieve better performance during insertion/update of the large
      * amount of data to the database table.
-     * @param \yii\db\ActiveRecord[] $models list of models to be saved.
+     * @param ActiveRecord[] $models list of models to be saved.
      * If a key is not a valid column name, the corresponding value will be ignored.
      * @param array $attributeNames name list of attributes that need to be update. Defaults to empty,
      * meaning all fields of corresponding active record will be saved.
@@ -54,12 +55,19 @@ class DbHelper
      * @param int $mode the save mode flag.
      * If this flag value is set to 0, any model that have a PK value is NULL will be inserted, otherwise it will be update.
      * If this flag value is set to 1, all models will be inserted regardless to PK values.
-     * If this flag value is set to 2, all models will be updated regardless to PK values
+     * If this flag value is set to 2, all models will be updated regardless to PK values.
+     * @param array $returnModels An associative array contains two element:
+     * ```php
+     *      [
+     *      'inserted' => [<array of inserted models with ID populated>],
+     *      'updated' => [<array of updated models>]
+     *      ]
+     * ```
      * @return array an array of two elements: the first is the last model ID (auto-incremental primary key)
      * inserted, the second is the number of rows inserted.
      * If there's no row inserted, the return value is null.
      */
-    public static function batchSave($models, $attributeNames=[], $mode=self::SAVE_MODE_AUTO)
+    public static function batchSave($models, $attributeNames=[], $mode=self::SAVE_MODE_AUTO, &$returnModels=null)
     {
         Yii::trace('batchSave()','application.DbHelper');
         if(is_null($models) || empty($models))
@@ -92,7 +100,7 @@ class DbHelper
                 $pks = [];
                 if(property_exists($model,'_isInserting'))
                 {
-                    $inserting = (bool)$model->_isInserting;
+                    $inserting = (bool)$model->{'_isInserting'};
                 }
                 else
                 {
@@ -135,6 +143,8 @@ class DbHelper
         {
             self::updateMultiple($tableSchema->fullName, $updateModels, array_keys($pkMarks));
             $retObj->updateCount = count($updateModels);
+            if(isset($returnModels))
+                $returnModels['updated'] = $updateModels;
         }
         if(count($insertModels) > 0 && isset($tableSchema))
         {
@@ -143,18 +153,33 @@ class DbHelper
             if(is_numeric($id))
                 $id = $retObj->insertCount + intval($id) - 1;
             $retObj->lastId = $id;
-        }
-
-        if((isset($retObj->updateCount) && $retObj->updateCount > 0) || (isset($retObj->insertCount) && $retObj->insertCount > 0))
-        {
-            $model = reset($models);
-            if(method_exists($model, 'afterBatchSave'))
+            if(isset($returnModels))
             {
-                call_user_func([$model, 'afterBatchSave'], $models);
+                self::populateIds($insertModels, $id, $retObj->insertCount);
+                $returnModels['inserted'] = $insertModels;
             }
         }
 
         return $retObj;
+    }
+
+    /**
+     * Populate auto-increment IDs back to models after batch-inserting
+     * @param ActiveRecord[] $insertModels
+     * @param $lastPk
+     * @param $insertedCount
+     */
+    private static function populateIds($insertModels, $lastPk, $insertedCount)
+    {
+        while($insertedCount > 0 && $insertedCount <= count($insertModels))
+        {
+            $insertedCount--;
+            $model = $insertModels[$insertedCount];
+            $keys = $model->primaryKey();
+            if(isset($keys) && count($keys) > 0)
+                $model->{$keys[0]} = $lastPk;
+            $lastPk = intval($lastPk) - 1;
+        }
     }
 
     /**
