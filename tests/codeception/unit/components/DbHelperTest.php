@@ -29,6 +29,8 @@ class DbHelperTest extends TestCase
         $return = DbHelper::batchSave($models);
         $this->assertObjectNotHasAttribute('updateCount', $return);
         $this->assertObjectHasAttribute('insertCount', $return);
-        $this->assertObjectHasAttribute('lastId', $return);
+        $this->assertEquals(10, $return->insertCount);
+        $this->assertObjectHasAttribute('lastId', $return->lastId);
+        echo 'Inserted 10 users with lastId='.$return->lastId;
     }
 }
