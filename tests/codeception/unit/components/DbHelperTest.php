@@ -1,8 +1,8 @@
 <?php
 
-namespace tests\unit\rest;
+namespace tests\codeception\unit\components;
 
-use tests\unit\models\User;
+use tests\codeception\unit\models\User;
 use Yii;
 use yii\codeception\TestCase;
 use fproject\components\DbHelper;
