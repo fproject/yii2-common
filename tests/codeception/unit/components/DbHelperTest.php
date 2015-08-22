@@ -2,6 +2,7 @@
 
 namespace tests\codeception\unit\components;
 
+use Codeception\Util\Debug;
 use tests\codeception\unit\models\User;
 use Yii;
 use yii\codeception\TestCase;
@@ -31,6 +32,7 @@ class DbHelperTest extends TestCase
         $this->assertObjectHasAttribute('insertCount', $return);
         $this->assertEquals(10, $return->insertCount);
         $this->assertObjectHasAttribute('lastId', $return);
-        echo 'Inserted 10 users with lastId='.$return->lastId;
+
+        Debug::debug('Inserted 10 users with LAST_ID='.$return->lastId);
     }
 }
