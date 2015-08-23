@@ -33,6 +33,6 @@ class DbHelperTest extends TestCase
         $this->assertEquals(10, $return->insertCount);
         $this->assertObjectHasAttribute('lastId', $return);
 
-        var_dump('Inserted 10 users with LAST_ID='.$return->lastId);
+        Debug::debug('Inserted 10 users with LAST_ID='.$return->lastId);
     }
 }
