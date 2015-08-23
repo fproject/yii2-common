@@ -80,7 +80,8 @@ class DbHelper
             call_user_func([$model, 'beforeBatchSave'], $models);
         }
 
-        $updateModels=[];
+        $updateData=[];
+        $insertData = [];
         $insertModels = [];
         foreach ($models as $model)
         {
@@ -127,26 +128,27 @@ class DbHelper
                 {
                     unset($data[$pkName]);
                 }
-                $insertModels[] = $data;
+                $insertData[] = $data;
+                $insertModels[] = $model;
             }
             else
             {
-                $updateModels[] = $model->toArray($attributeNames);
+                $updateData[] = $model->toArray($attributeNames);
             }
         }
 
         $retObj = new stdClass();
 
-        if(count($updateModels) > 0 && isset($tableSchema))
+        if(count($updateData) > 0 && isset($tableSchema))
         {
-            self::updateMultiple($tableSchema->fullName, $updateModels, array_keys($pks));
-            $retObj->updateCount = count($updateModels);
+            self::updateMultiple($tableSchema->fullName, $updateData, array_keys($pks));
+            $retObj->updateCount = count($updateData);
             if(isset($returnModels))
-                $returnModels['updated'] = $updateModels;
+                $returnModels['updated'] = $updateData;
         }
         if(count($insertModels) > 0 && isset($tableSchema))
         {
-            $retObj->insertCount = self::insertMultiple($tableSchema->fullName, $insertModels);
+            $retObj->insertCount = self::insertMultiple($tableSchema->fullName, $insertData);
             $id = self::db()->getLastInsertID($tableSchema->sequenceName);
             if(is_numeric($id))
                 $id = $retObj->insertCount + intval($id) - 1;
@@ -168,7 +170,7 @@ class DbHelper
      * @param $lastPk
      * @param $insertedCount
      */
-    private static function populateIds($insertModels, $pks, $lastPk, $insertedCount)
+    private static function populateIds(&$insertModels, $pks, $lastPk, $insertedCount)
     {
         while($insertedCount > 0 && $insertedCount <= count($insertModels))
         {
