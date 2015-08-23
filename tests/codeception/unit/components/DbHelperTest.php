@@ -45,4 +45,73 @@ class DbHelperTest extends TestCase
         $this->assertEquals($models[0]->username, $firstUser->username);
         $this->assertEquals($models[9]->username, $lastUser->username);
     }
+
+    public function testBatchSave002()
+    {
+
+        /** @var User[] $inputModels */
+        $inputModels = [];
+        for($i=0;$i<10;$i++)
+        {
+            $m = $inputModels[] = new User();
+            $m->username = "New User $i-".rand(1000,9999);
+            $m->password = $m->username;
+        }
+
+        /** @var array $savedReturn */
+        $savedReturn = [];
+        $return = DbHelper::batchSave($inputModels, [], DbHelper::SAVE_MODE_AUTO, $savedReturn);
+        $this->assertObjectNotHasAttribute('updateCount', $return);
+        $this->assertObjectHasAttribute('insertCount', $return);
+        $this->assertEquals(10, $return->insertCount);
+        $this->assertObjectHasAttribute('lastId', $return);
+
+        /** @var User $lastUser */
+        $lastUser = User::findOne($return->lastId);
+        /** @var User $firstUser */
+        $firstUser = User::findOne($return->lastId - $return->insertCount + 1);
+        $this->assertNotEmpty($lastUser);
+        $this->assertNotEmpty($firstUser);
+        $this->assertEquals($inputModels[0]->username, $firstUser->username);
+        $this->assertEquals($inputModels[9]->username, $lastUser->username);
+
+        $this->assertArrayHasKey('inserted', $savedReturn);
+        $this->assertArrayNotHasKey('updated', $savedReturn);
+
+        for($i=0; $i<10; $i++)
+        {
+            /** @var User $m */
+            $m = $savedReturn['inserted'][$i];
+            $this->assertEquals($return->lastId - 9 + $i, $m->id);
+        }
+
+        $inputModels = $savedReturn['inserted'];
+        for($i=0;$i<10;$i++)
+        {
+            $m = $inputModels[] = new User();
+            $m->username = "New User $i-".rand(1000,9999);
+            $m->password = $m->username;
+        }
+
+        $updatedLastId = $return->lastId;
+
+        $return = DbHelper::batchSave($inputModels, [], DbHelper::SAVE_MODE_AUTO, $savedReturn);
+        $this->assertObjectHasAttribute('updateCount', $return);
+        $this->assertEquals(10, $return->updateCount);
+        $this->assertObjectHasAttribute('insertCount', $return);
+        $this->assertEquals(10, $return->insertCount);
+        $this->assertObjectHasAttribute('lastId', $return);
+
+        $this->assertArrayHasKey('inserted', $savedReturn);
+        $this->assertArrayHasKey('updated', $savedReturn);
+
+        for($i=0; $i<10; $i++)
+        {
+            /** @var User $m */
+            $m = $savedReturn['inserted'][$i];
+            $this->assertEquals($return->lastId - 9 + $i, $m->id);
+            $m = $savedReturn['updated'][$i];
+            $this->assertEquals($updatedLastId - 9 + $i, $m->id);
+        }
+    }
 }
