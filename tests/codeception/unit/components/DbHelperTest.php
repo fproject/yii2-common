@@ -62,8 +62,6 @@ class DbHelperTest extends TestCase
         $savedReturn = [];
         $return = DbHelper::batchSave($inputModels, [], DbHelper::SAVE_MODE_AUTO, $savedReturn);
 
-        return;
-
         $this->assertObjectNotHasAttribute('updateCount', $return);
         $this->assertObjectHasAttribute('insertCount', $return);
         $this->assertEquals(10, $return->insertCount);
