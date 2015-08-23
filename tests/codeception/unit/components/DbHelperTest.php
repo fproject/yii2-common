@@ -20,6 +20,7 @@ class DbHelperTest extends TestCase
 
     public function testBatchSaveCommand001()
     {
+        /** @var User[] $models */
         $models = [];
         for($i=0;$i<10;$i++)
         {
@@ -34,5 +35,14 @@ class DbHelperTest extends TestCase
         $this->assertObjectHasAttribute('lastId', $return);
 
         Debug::debug('Inserted 10 users with LAST_ID='.$return->lastId);
+
+        /** @var User $lastUser */
+        $lastUser = User::findOne($return->lastId);
+        /** @var User $firstUser */
+        $firstUser = User::findOne($return->lastId - $return->insertCount + 1);
+        $this->assertNotEmpty($lastUser);
+        $this->assertNotEmpty($firstUser);
+        $this->assertEquals($models[0]->username, $firstUser->username);
+        $this->assertEquals($models[9]->username, $lastUser->username);
     }
 }
