@@ -80,7 +80,6 @@ class DbHelper
             call_user_func([$model, 'beforeBatchSave'], $models);
         }
 
-        $pkMarks=[];
         $updateModels=[];
         $insertModels = [];
         foreach ($models as $model)
@@ -88,17 +87,19 @@ class DbHelper
             if(!isset($tableSchema))
                 $tableSchema = $model->getTableSchema();
 
+            if(!isset($pks))
+                $pks = $model->getPrimaryKey(true);
+
             if($mode==self::SAVE_MODE_INSERT_ALL)
             {
-                $insertModels[] = $model->toArray($attributeNames);
+                $inserting = true;
             }
             elseif($mode==self::SAVE_MODE_UPDATE_ALL)
             {
-                $updateModels = $model->toArray($attributeNames);
+                $inserting = false;
             }
             else
             {
-                $pks = [];
                 if(property_exists($model,'_isInserting'))
                 {
                     $inserting = (bool)$model->{'_isInserting'};
@@ -106,35 +107,31 @@ class DbHelper
                 else
                 {
                     $inserting = false;
-                    $pks = $model->getPrimaryKey(true);
+
                     foreach($pks as $pkName=>$pkValue)
                     {
-                        $pkMarks[$pkName] = true;
                         if(is_null($pkValue) || !is_numeric($pkValue))
                         {
                             $inserting = true;
-                            if(!is_numeric($pkValue))
-                            {
-                                $model->$pkName = null;
-                            }
                             break;
                         }
                     }
                 }
+            }
 
-                if($inserting)
+            if($inserting)
+            {
+                $data = $model->toArray($attributeNames);
+
+                foreach($pks as $pkName=>$pkValue)
                 {
-                    $data = $model->toArray($attributeNames);
-                    foreach($pks as $pkName=>$pkValue)
-                    {
-                        unset($data[$pkName]);
-                    }
-                    $insertModels[] = $data;
+                    unset($data[$pkName]);
                 }
-                else
-                {
-                    $updateModels[] = $model->toArray($attributeNames);
-                }
+                $insertModels[] = $data;
+            }
+            else
+            {
+                $updateModels[] = $model->toArray($attributeNames);
             }
         }
 
@@ -142,7 +139,7 @@ class DbHelper
 
         if(count($updateModels) > 0 && isset($tableSchema))
         {
-            self::updateMultiple($tableSchema->fullName, $updateModels, array_keys($pkMarks));
+            self::updateMultiple($tableSchema->fullName, $updateModels, array_keys($pks));
             $retObj->updateCount = count($updateModels);
             if(isset($returnModels))
                 $returnModels['updated'] = $updateModels;
@@ -156,7 +153,7 @@ class DbHelper
             $retObj->lastId = $id;
             if(isset($returnModels))
             {
-                self::populateIds($insertModels, $id, $retObj->insertCount);
+                self::populateIds($insertModels, array_keys($pks), $id, $retObj->insertCount);
                 $returnModels['inserted'] = $insertModels;
             }
         }
@@ -167,18 +164,17 @@ class DbHelper
     /**
      * Populate auto-increment IDs back to models after batch-inserting
      * @param ActiveRecord[] $insertModels
+     * @param array $pks
      * @param $lastPk
      * @param $insertedCount
      */
-    private static function populateIds($insertModels, $lastPk, $insertedCount)
+    private static function populateIds($insertModels, $pks, $lastPk, $insertedCount)
     {
         while($insertedCount > 0 && $insertedCount <= count($insertModels))
         {
             $insertedCount--;
             $model = $insertModels[$insertedCount];
-            $keys = $model->primaryKey();
-            if(isset($keys) && count($keys) > 0)
-                $model->{$keys[0]} = $lastPk;
+            $model->{$pks[0]} = $lastPk;
             $lastPk = intval($lastPk) - 1;
         }
     }
