@@ -66,6 +66,8 @@ class DbHelperTest extends TestCase
         $this->assertEquals(10, $return->insertCount);
         $this->assertObjectHasAttribute('lastId', $return);
 
+        return;
+
         /** @var User $lastUser */
         $lastUser = User::findOne($return->lastId);
         /** @var User $firstUser */
@@ -95,23 +97,23 @@ class DbHelperTest extends TestCase
 
         $updatedLastId = $return->lastId;
 
-//        $return = DbHelper::batchSave($inputModels, [], DbHelper::SAVE_MODE_AUTO, $savedReturn);
-//        $this->assertObjectHasAttribute('updateCount', $return);
-//        $this->assertEquals(10, $return->updateCount);
-//        $this->assertObjectHasAttribute('insertCount', $return);
-//        $this->assertEquals(10, $return->insertCount);
-//        $this->assertObjectHasAttribute('lastId', $return);
-//
-//        $this->assertArrayHasKey('inserted', $savedReturn);
-//        $this->assertArrayHasKey('updated', $savedReturn);
-//
-//        for($i=0; $i<10; $i++)
-//        {
-//            /** @var User $m */
-//            $m = $savedReturn['inserted'][$i];
-//            $this->assertEquals($return->lastId - 9 + $i, $m->id);
-//            $m = $savedReturn['updated'][$i];
-//            $this->assertEquals($updatedLastId - 9 + $i, $m->id);
-//        }
+        $return = DbHelper::batchSave($inputModels, [], DbHelper::SAVE_MODE_AUTO, $savedReturn);
+        $this->assertObjectHasAttribute('updateCount', $return);
+        $this->assertEquals(10, $return->updateCount);
+        $this->assertObjectHasAttribute('insertCount', $return);
+        $this->assertEquals(10, $return->insertCount);
+        $this->assertObjectHasAttribute('lastId', $return);
+
+        $this->assertArrayHasKey('inserted', $savedReturn);
+        $this->assertArrayHasKey('updated', $savedReturn);
+
+        for($i=0; $i<10; $i++)
+        {
+            /** @var User $m */
+            $m = $savedReturn['inserted'][$i];
+            $this->assertEquals($return->lastId - 9 + $i, $m->id);
+            $m = $savedReturn['updated'][$i];
+            $this->assertEquals($updatedLastId - 9 + $i, $m->id);
+        }
     }
 }
