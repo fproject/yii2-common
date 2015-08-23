@@ -18,7 +18,7 @@ class DbHelperTest extends TestCase
         $this->assertInstanceOf('yii\db\Command', $cmd);
     }
 
-    public function testBatchSaveCommand001()
+    public function testBatchSave001()
     {
         /** @var User[] $models */
         $models = [];
