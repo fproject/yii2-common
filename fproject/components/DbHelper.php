@@ -142,6 +142,7 @@ class DbHelper
 
         if(count($updateData) > 0 && isset($tableSchema))
         {
+            Debug::debug($updateData);
             self::updateMultiple($tableSchema->fullName, $updateData, array_keys($pks));
             $retObj->updateCount = count($updateData);
             if(isset($returnModels))
@@ -391,8 +392,6 @@ class DbHelper
         //Must ensure Yii::$app->db->emulatePrepare is set to TRUE;
         $command=self::db()->createCommand($sql);
 
-        Debug::debug($sql);
-        Debug::debug(print_r($params,true));
         foreach($params as $name=>$value)
             $command->bindValue($name,$value);
 
