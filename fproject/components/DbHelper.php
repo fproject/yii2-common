@@ -90,8 +90,7 @@ class DbHelper
             if(!isset($tableSchema))
                 $tableSchema = $model->getTableSchema();
 
-            if(!isset($pks))
-                $pks = $model->getPrimaryKey(true);
+            $pks = $model->getPrimaryKey(true);
 
             if($mode==self::SAVE_MODE_INSERT_ALL)
             {
@@ -124,7 +123,6 @@ class DbHelper
 
             if($inserting)
             {
-                Debug::debug('$inserting=true'.print_r($model,true));
                 $data = $model->toArray($attributeNames);
 
                 foreach($pks as $pkName=>$pkValue)
@@ -145,7 +143,6 @@ class DbHelper
 
         if(count($updateData) > 0 && isset($tableSchema))
         {
-            Debug::debug($updateData);
             self::updateMultiple($tableSchema->fullName, $updateData, array_keys($pks));
             $retObj->updateCount = count($updateData);
             if(isset($returnModels))
