@@ -18,6 +18,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace fproject\components;
+use Codeception\Util\Debug;
 use Yii;
 use yii\db\Connection;
 use stdClass;
@@ -283,10 +284,10 @@ class DbHelper
             $templates = [
                 'rowUpdateStatement'=>'UPDATE {{tableName}} SET {{columnNameValuePairs}} WHERE {{rowUpdateCondition}}',
                 'columnAssignValue'=>'{{column}}={{value}}',
-                'columnValueGlue'=>', ',
+                'columnValueGlue'=>',',
                 'rowUpdateConditionExpression'=>'{{pkName}}={{pkValue}}',
                 'rowUpdateConditionJoin'=>' AND ',
-                'rowUpdateStatementGlue'=>'; ',
+                'rowUpdateStatementGlue'=>';',
             ];
         }
 
@@ -390,6 +391,8 @@ class DbHelper
         //Must ensure Yii::$app->db->emulatePrepare is set to TRUE;
         $command=self::db()->createCommand($sql);
 
+        Debug::debug($sql);
+        Debug::debug(print_r($params,true));
         foreach($params as $name=>$value)
             $command->bindValue($name,$value);
 
