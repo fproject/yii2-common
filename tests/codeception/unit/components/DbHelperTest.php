@@ -108,8 +108,6 @@ class DbHelperTest extends TestCase
         $this->assertArrayHasKey('inserted', $savedReturn);
         $this->assertArrayHasKey('updated', $savedReturn);
 
-        Debug::debug($savedReturn);
-        return;
         for($i=0; $i<10; $i++)
         {
             /** @var User $m */

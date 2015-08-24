@@ -135,7 +135,7 @@ class DbHelper
             else
             {
                 $updateData[] = $model->toArray($attributeNames);
-                $updateModels = $model;
+                $updateModels[] = $model;
             }
         }
 
