@@ -39,19 +39,50 @@ class ActiveRecord extends \yii\db\ActiveRecord
      * If this flag value is set to 0, any model that have a PK value is NULL will be inserted, otherwise it will be update.
      * If this flag value is set to 1, all models will be inserted regardless to PK values.
      * If this flag value is set to 2, all models will be updated regardless to PK values
-     * @return array an array of two elements: the first is the last model ID (auto-incremental primary key)
-     * inserted, the second is the number of rows inserted.
-     * If there's no row inserted, the return value is null.
+     * @return \stdClass An instance of stdClass that may have one of the following fields:
+     * - The 'lastId' field is the last model ID (auto-incremental primary key) inserted.
+     * - The 'insertCount' is the number of rows inserted.
+     * - The 'updateCount' is the number of rows updated.
      */
     public static function batchSave($models, $attributeNames=[], $mode=DbHelper::SAVE_MODE_AUTO)
     {
-        $a = DbHelper::batchSave($models, $attributeNames, $mode);
+        $returnModels=[];
+        $a = DbHelper::batchSave($models, $attributeNames, $mode, $returnModels);
         if(isset($a))
-            static::afterBatchSave($models, $attributeNames, $mode);
+        {
+            $insertModels = isset($returnModels['inserted']) ? $returnModels['inserted'] : null;
+            $updateModels = isset($returnModels['updated']) ? $returnModels['updated'] : null;
+            static::afterBatchSave($attributeNames, $mode, $insertModels, $updateModels);
+        }
         return $a;
     }
 
-    public static function afterBatchSave($models, $attributeNames, $mode)
+    /** @inheritdoc */
+    public static function deleteAll($condition = '', $params = [])
+    {
+        $r = parent::deleteAll($condition, $params);
+        static::afterBatchDelete($condition, $params);
+        return $r;
+    }
+
+    /**
+     * The post-process after batch-saving models
+     * @param $attributeNames
+     * @param int $mode
+     * @param null $insertModels
+     * @param null $updateModels
+     */
+    public static function afterBatchSave($attributeNames, $mode=DbHelper::SAVE_MODE_AUTO, $insertModels=null, $updateModels=null)
+    {
+        //Abstract method
+    }
+
+    /**
+     * The post-process after batch-deleting models
+     * @param string $condition
+     * @param array $params
+     */
+    public static function afterBatchDelete($condition, $params = [])
     {
         //Abstract method
     }

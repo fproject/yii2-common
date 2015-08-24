@@ -64,7 +64,7 @@ class DbHelper
      *      'updated' => [<array of updated models>]
      *      ]
      * ```
-     * @return stdClass An instance of stdClass that has of two fields:
+     * @return stdClass An instance of stdClass that may have one of the following fields:
      * - The 'lastId' field is the last model ID (auto-incremental primary key) inserted.
      * - The 'insertCount' is the number of rows inserted.
      * - The 'updateCount' is the number of rows updated.
