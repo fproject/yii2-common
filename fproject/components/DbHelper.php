@@ -81,9 +81,10 @@ class DbHelper
             call_user_func([$model, 'beforeBatchSave'], $models);
         }
 
-        $updateData=[];
         $insertData = [];
         $insertModels = [];
+        $updateData=[];
+        $updateModels = [];
         foreach ($models as $model)
         {
             if(!isset($tableSchema))
@@ -100,7 +101,7 @@ class DbHelper
             {
                 $inserting = false;
             }
-            else
+            else // $mode == SAVE_MODE_AUTO
             {
                 if(property_exists($model,'_isInserting'))
                 {
@@ -112,7 +113,7 @@ class DbHelper
 
                     foreach($pks as $pkName=>$pkValue)
                     {
-                        if(is_null($pkValue) || !is_numeric($pkValue))
+                        if(empty($pkValue) || !is_numeric($pkValue))
                         {
                             $inserting = true;
                             break;
@@ -135,6 +136,7 @@ class DbHelper
             else
             {
                 $updateData[] = $model->toArray($attributeNames);
+                $updateModels = $model;
             }
         }
 
@@ -146,7 +148,7 @@ class DbHelper
             self::updateMultiple($tableSchema->fullName, $updateData, array_keys($pks));
             $retObj->updateCount = count($updateData);
             if(isset($returnModels))
-                $returnModels['updated'] = $updateData;
+                $returnModels['updated'] = $updateModels;
         }
         if(count($insertModels) > 0 && isset($tableSchema))
         {
