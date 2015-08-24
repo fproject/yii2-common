@@ -124,6 +124,7 @@ class DbHelper
 
             if($inserting)
             {
+                Debug::debug('$inserting=true'.print_r($model,true));
                 $data = $model->toArray($attributeNames);
 
                 foreach($pks as $pkName=>$pkValue)
