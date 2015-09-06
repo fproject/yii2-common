@@ -18,7 +18,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace fproject\components;
-use Codeception\Util\Debug;
 use Yii;
 use yii\db\Connection;
 use stdClass;
