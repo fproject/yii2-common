@@ -151,6 +151,7 @@ class DbHelperTest extends TestCase
 
         Debug::debug('Inserted a department with ID = '.$department->id);
 
+        $id = $return->lastId;
 
         /** @var array $savedReturn */
         $savedReturn = [];
@@ -160,9 +161,10 @@ class DbHelperTest extends TestCase
         foreach($savedUsers as $savedUser)
         {
             $m = $inputModels[] = new UserDepartmentAssignment();
-            $m->userId = '123';//'$savedUser->id;
+            $m->userId = $id;
             $m->departmentId = $department->id;
             $m->_isInserting = true;
+            $id--;
         }
 
         Debug::debug('Before saved 10 UserDepartmentAssignment records. '.Json::encode($inputModels));
