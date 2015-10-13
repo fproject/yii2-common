@@ -3,6 +3,8 @@
 namespace tests\codeception\unit\components;
 
 use Codeception\Util\Debug;
+use tests\codeception\unit\models\base\Department;
+use tests\codeception\unit\models\base\UserDepartmentAssignment;
 use tests\codeception\unit\models\User;
 use Yii;
 use yii\codeception\TestCase;
@@ -116,5 +118,49 @@ class DbHelperTest extends TestCase
             $m = $savedReturn['updated'][$i];
             $this->assertEquals($updatedLastId - 9 + $i, $m->id);
         }
+    }
+
+    public function testBatchSaveForNoIncrementIdField()
+    {
+        /** @var User[] $inputModels */
+        $inputModels = [];
+        for($i=0;$i<10;$i++)
+        {
+            $m = $inputModels[] = new User();
+            $m->username = "New User $i-".rand(10000,99999);
+            $m->password = $m->username;
+        }
+
+        /** @var User[] $savedUsers */
+        $savedUsers = [];
+        DbHelper::batchSave($inputModels, [], DbHelper::SAVE_MODE_AUTO, $savedUsers);
+
+        $department = new Department();
+        $department->name = "Department testBatchSaveForNoIncrementIdField";
+        $department->save(false);
+
+
+        /** @var array $savedReturn */
+        $savedReturn = [];
+
+        /** @var UserDepartmentAssignment[] $inputModels */
+        $inputModels = [];
+        for($i=0;$i<10;$i++)
+        {
+            $m = $inputModels[] = new UserDepartmentAssignment();
+            $m->userId = $savedUsers[$i]->id;
+            $m->departmentId = $department->id;
+            $m->_isInserting = true;
+        }
+
+        $return = DbHelper::batchSave($inputModels, [], DbHelper::SAVE_MODE_AUTO, $savedReturn);
+
+        $this->assertObjectNotHasAttribute('updateCount', $return);
+        $this->assertObjectHasAttribute('insertCount', $return);
+        $this->assertEquals(10, $return->insertCount);
+        $this->assertObjectHasAttribute('lastId', $return);
+
+        $this->assertArrayHasKey('inserted', $savedReturn);
+        $this->assertArrayNotHasKey('updated', $savedReturn);
     }
 }
