@@ -151,25 +151,20 @@ class DbHelperTest extends TestCase
 
         Debug::debug('Inserted a department with ID = '.$department->id);
 
-        $id = $return->lastId;
-
-        /** @var array $savedReturn */
-        $savedReturn = [];
-
         /** @var UserDepartmentAssignment[] $inputModels */
         $inputModels = [];
         foreach($savedUsers as $savedUser)
         {
             $m = $inputModels[] = new UserDepartmentAssignment();
-            $m->userId = $id;
+            $m->userId = $savedUser->id;
             $m->departmentId = $department->id;
             $m->_isInserting = true;
-            $id--;
         }
 
-        Debug::debug('Before saved 10 UserDepartmentAssignment records. '.Json::encode($inputModels));
+        Debug::debug('Before saving 10 UserDepartmentAssignment records. '.Json::encode($inputModels));
 
-
+        /** @var array $savedReturn */
+        $savedReturn = [];
         $return = DbHelper::batchSave($inputModels, [], DbHelper::SAVE_MODE_AUTO, $savedReturn);
 
         Debug::debug('Batch saved 10 UserDepartmentAssignment records. '.Json::encode($return));
