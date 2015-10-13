@@ -138,6 +138,8 @@ class DbHelperTest extends TestCase
 
         Debug::debug('Inserted 10 users with LAST_ID='.$return->lastId);
 
+        Debug::debug(Json::encode($savedReturn));
+
         $this->assertArrayHasKey('inserted', $savedReturn);
         $this->assertArrayNotHasKey('updated', $savedReturn);
         /** @var User[] $savedUsers */
