@@ -9,6 +9,7 @@ use tests\codeception\unit\models\User;
 use Yii;
 use yii\codeception\TestCase;
 use fproject\components\DbHelper;
+use yii\helpers\Json;
 
 class DbHelperTest extends TestCase
 {
@@ -120,7 +121,7 @@ class DbHelperTest extends TestCase
         }
     }
 
-    public function testBatchSaveForNoIncrementIdField()
+    public function testBatchSaveForNoIncrementIdModel()
     {
         /** @var User[] $inputModels */
         $inputModels = [];
@@ -133,7 +134,9 @@ class DbHelperTest extends TestCase
 
         /** @var User[] $savedReturn */
         $savedReturn = [];
-        DbHelper::batchSave($inputModels, [], DbHelper::SAVE_MODE_AUTO, $savedReturn);
+        $return = DbHelper::batchSave($inputModels, [], DbHelper::SAVE_MODE_AUTO, $savedReturn);
+
+        Debug::debug('Inserted 10 users with LAST_ID='.$return->lastId);
 
         $this->assertArrayHasKey('inserted', $savedReturn);
         $this->assertArrayNotHasKey('updated', $savedReturn);
@@ -143,6 +146,8 @@ class DbHelperTest extends TestCase
         $department = new Department();
         $department->name = "Department testBatchSaveForNoIncrementIdField";
         $department->save(false);
+
+        Debug::debug('Inserted a department with ID = '.$department->id);
 
 
         /** @var array $savedReturn */
@@ -159,6 +164,8 @@ class DbHelperTest extends TestCase
         }
 
         $return = DbHelper::batchSave($inputModels, [], DbHelper::SAVE_MODE_AUTO, $savedReturn);
+
+        Debug::debug('Batch saved 10 UserDepartmentAssignment records. '.Json::encode($return));
 
         $this->assertObjectNotHasAttribute('updateCount', $return);
         $this->assertObjectHasAttribute('insertCount', $return);
