@@ -165,6 +165,9 @@ class DbHelperTest extends TestCase
             $m->_isInserting = true;
         }
 
+        Debug::debug('Before saved 10 UserDepartmentAssignment records. '.Json::encode($inputModels));
+
+
         $return = DbHelper::batchSave($inputModels, [], DbHelper::SAVE_MODE_AUTO, $savedReturn);
 
         Debug::debug('Batch saved 10 UserDepartmentAssignment records. '.Json::encode($return));
