@@ -131,9 +131,14 @@ class DbHelperTest extends TestCase
             $m->password = $m->username;
         }
 
+        /** @var User[] $savedReturn */
+        $savedReturn = [];
+        DbHelper::batchSave($inputModels, [], DbHelper::SAVE_MODE_AUTO, $savedReturn);
+
+        $this->assertArrayHasKey('inserted', $savedReturn);
+        $this->assertArrayNotHasKey('updated', $savedReturn);
         /** @var User[] $savedUsers */
-        $savedUsers = [];
-        DbHelper::batchSave($inputModels, [], DbHelper::SAVE_MODE_AUTO, $savedUsers);
+        $savedUsers = $savedReturn['inserted'];
 
         $department = new Department();
         $department->name = "Department testBatchSaveForNoIncrementIdField";
