@@ -160,7 +160,7 @@ class DbHelperTest extends TestCase
         foreach($savedUsers as $savedUser)
         {
             $m = $inputModels[] = new UserDepartmentAssignment();
-            $m->userId = $savedUser->id;
+            $m->userId = '123';//'$savedUser->id;
             $m->departmentId = $department->id;
             $m->_isInserting = true;
         }
