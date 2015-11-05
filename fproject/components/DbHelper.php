@@ -177,7 +177,9 @@ class DbHelper
     public static function batchDelete($table, $data)
     {
         $command = self::createMultipleDeleteCommand($table, $data);
-        return $command->execute();
+        if($command->execute() > 0)
+            return count($data);
+        return 0;
     }
 
     /**
