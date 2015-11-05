@@ -165,6 +165,22 @@ class DbHelper
     }
 
     /**
+     * Delete a list of data from a table, each row data may be inserted or updated depend on its existence.
+     * This method could be used to achieve better performance during insertion/update of the large
+     * amount of data to the database table.
+     * @param string $table the table that has rows will be deleted.
+     * @param array $data list of row-criteria for the rows to be deleted.
+     * Each element should be an array in form ['column1'=>'value1', 'column2'=>'value2',...]
+     *
+     * @return int the number of row deleted
+     */
+    public static function batchDelete($table, $data)
+    {
+        $command = self::createMultipleDeleteCommand($table, $data);
+        return $command->execute();
+    }
+
+    /**
      * Populate auto-increment IDs back to models after batch-inserting
      * @param ActiveRecord[] $insertModels
      * @param array $pks
