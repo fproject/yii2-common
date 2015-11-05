@@ -143,7 +143,7 @@ class DbHelperTest extends TestCase
         /** @var User[] $savedUsers */
         $savedUsers = $savedReturn['inserted'];
 
-        Debug::debug(Json::encode($savedUsers));
+        //Debug::debug(Json::encode($savedUsers));
 
         $department = new Department();
         $department->name = "Department testBatchSaveForNoIncrementIdField";
@@ -198,6 +198,7 @@ class DbHelperTest extends TestCase
         /** @var UserDepartmentAssignment[] $inputModels */
         $inputModels = [];
         $ids = [];
+        $sql = '';
         foreach($savedUsers as $savedUser)
         {
             $m = $inputModels[] = new UserDepartmentAssignment();
@@ -205,11 +206,19 @@ class DbHelperTest extends TestCase
             $m->departmentId = $department->id;
             $m->_isInserting = true;
             $ids[] = ['userId'=>$savedUser->id,'departmentId'=>$department->id];
+            if($sql != '')
+                $sql = $sql.' OR ';
+            $sql = $sql."(`userId`=$savedUser->id AND `departmentId`=$department->id)";
         }
 
         DbHelper::batchSave($inputModels, [], DbHelper::SAVE_MODE_AUTO);
 
         $return = DbHelper::batchDelete(UserDepartmentAssignment::tableName(), $ids);
         $this->assertEquals(10, $return);
+
+        $sql = 'SELECT * FROM '.UserDepartmentAssignment::tableName().' WHERE '.$sql;
+
+        $return = UserDepartmentAssignment::findBySql($sql)->count();
+        $this->assertEquals(0, $return);
     }
 }
