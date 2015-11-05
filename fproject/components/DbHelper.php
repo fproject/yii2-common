@@ -275,7 +275,7 @@ class DbHelper
      * @param mixed $pkNames Name or an array of names of primary key(s)
      * @param array $templates templates for the SQL parts.
      * @throws \yii\db\Exception
-     * @return \yii\db\Command multiple insert command
+     * @return \yii\db\Command multiple update command
      */
     public static function createMultipleUpdateCommand($table, $data, $pkNames, $templates=null)
     {
@@ -387,6 +387,91 @@ class DbHelper
         }
 
         $sql=implode($templates['rowUpdateStatementGlue'], $rowUpdateStatements);
+
+        //Must ensure Yii::$app->db->emulatePrepare is set to TRUE;
+        $command=self::db()->createCommand($sql);
+
+        foreach($params as $name=>$value)
+            $command->bindValue($name,$value);
+
+        return $command;
+    }
+
+    /**
+     * Creates a multiple DELETE command.
+     * This method compose the SQL expression via given part templates, providing ability to adjust
+     * command for different SQL syntax.
+     * @param string $table the table that has rows will be deleted.
+     * @param array $data list data to be delete, each value should be an array in format (column name=>column value).
+     * If a key is not a valid column name, the corresponding value will be ignored.
+     * @param array $templates templates for the SQL parts.
+     * @throws \yii\db\Exception
+     * @return \yii\db\Command multiple delete command
+     */
+    public static function createMultipleDeleteCommand($table, $data, $templates=null)
+    {
+        if(is_null($templates))
+        {
+            $templates = [
+                'rowDeleteStatement'=>'DELETE FROM {{tableName}} WHERE {{rowDeleteCondition}}',
+                'columnValueGlue'=>',',
+                'rowDeleteConditionExpression'=>'{{colName}}={{colValue}}',
+                'rowDeleteConditionJoin'=>' AND ',
+                'rowDeleteStatementGlue'=>';',
+            ];
+        }
+
+        $tableSchema=self::db()->schema->getTableSchema($tableName=$table);
+
+        if($tableSchema===null)
+            throw new Exception(Yii::t('yii','Table "{table}" does not exist.',
+                ['{table}'=>$tableName]));
+        $tableName=self::db()->quoteTableName($tableSchema->name);
+        $params=[];
+        $quoteColumnNames=[];
+
+        $columns=[];
+
+        foreach($data as $rowData)
+        {
+            foreach($rowData as $columnName=>$columnValue)
+            {
+                if(!in_array($columnName,$columns,true))
+                    if($tableSchema->getColumn($columnName)!==null)
+                        $columns[]=$columnName;
+            }
+        }
+
+        foreach($columns as $name)
+            $quoteColumnNames[$name]=self::db()->schema->quoteColumnName($name);
+
+        $rowDeleteStatements=[];
+
+        foreach($data as $rowKey=>$rowData)
+        {
+            $rowDeleteCondition = '';
+            foreach($rowData as $columnName=>$columnValue)
+            {
+                /** @var \yii\db\ColumnSchema $column */
+                $column=$tableSchema->getColumn($columnName);
+                $paramValuePlaceHolder=':'.$columnName.'_'.$rowKey;
+                $params[$paramValuePlaceHolder]=$column->dbTypecast($columnValue);
+
+                if($rowDeleteCondition != '')
+                    $rowDeleteCondition = $rowDeleteCondition.$templates['rowDeleteConditionJoin'];
+                $rowDeleteCondition = $rowDeleteCondition.strtr($templates['rowDeleteConditionExpression'], array(
+                        '{{colName}}'=>$columnName,
+                        '{{colValue}}'=>$paramValuePlaceHolder,
+                    ));
+            }
+
+            $rowDeleteStatements[]=strtr($templates['rowDeleteStatement'],array(
+                '{{tableName}}'=>$tableName,
+                '{{rowDeleteCondition}}'=>$rowDeleteCondition,
+            ));
+        }
+
+        $sql=implode($templates['rowDeleteStatementGlue'], $rowDeleteStatements);
 
         //Must ensure Yii::$app->db->emulatePrepare is set to TRUE;
         $command=self::db()->createCommand($sql);
