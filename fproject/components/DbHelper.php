@@ -177,8 +177,14 @@ class DbHelper
     public static function batchDelete($table, $data)
     {
         $command = self::createMultipleDeleteCommand($table, $data);
-        if($command->execute() > 0)
-            return count($data);
+        $n = $command->execute();
+        if($n > 0)
+        {
+            if($n > 1)
+                return $n;
+            else
+                return count($data);
+        }
         return 0;
     }
 
@@ -439,6 +445,8 @@ class DbHelper
             ];
         }
 
+        $rowDeleteStatementGlue = $templates['rowDeleteStatementGlue'];
+
         $tableSchema=self::db()->schema->getTableSchema($tableName=$table);
 
         if($tableSchema===null)
@@ -489,7 +497,19 @@ class DbHelper
             ));
         }
 
-        $sql=implode($templates['rowDeleteStatementGlue'], $rowDeleteStatements);
+        $sql=implode($rowDeleteStatementGlue, $rowDeleteStatements);
+
+        if(self::db()->driverName =='mysql')
+        {
+            $rowCountStatement = 'SELECT ROW_COUNT()';
+        }
+        elseif(self::db()->driverName =='mssql')
+        {
+            $rowCountStatement = 'SELECT @@ROWCOUNT';
+        }
+
+        if(isset($rowCountStatement))
+            $sql = $sql.$rowDeleteStatementGlue.$rowCountStatement;
 
         //Must ensure Yii::$app->db->emulatePrepare is set to TRUE;
         $command=self::db()->createCommand($sql);
