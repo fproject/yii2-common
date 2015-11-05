@@ -163,8 +163,6 @@ class DbHelperTest extends TestCase
 
         Debug::debug('Before saving 10 UserDepartmentAssignment records. '.Json::encode($inputModels));
 
-        /** @var array $savedReturn */
-        $savedReturn = [];
         $return = DbHelper::batchSave($inputModels, [], DbHelper::SAVE_MODE_AUTO);
 
         Debug::debug('Batch saved 10 UserDepartmentAssignment records. '.Json::encode($return));
@@ -173,8 +171,45 @@ class DbHelperTest extends TestCase
         $this->assertObjectHasAttribute('insertCount', $return);
         $this->assertEquals(10, $return->insertCount);
         $this->assertObjectHasAttribute('lastId', $return);
+    }
 
-        //$this->assertArrayHasKey('inserted', $savedReturn);
-        //$this->assertArrayNotHasKey('updated', $savedReturn);
+    public function testBatchDeleteForNoIncrementIdModel()
+    {
+        /** @var User[] $inputModels */
+        $inputModels = [];
+        for($i=0;$i<10;$i++)
+        {
+            $m = $inputModels[] = new User();
+            $m->username = "New User $i-".rand(10000,99999);
+            $m->password = $m->username;
+        }
+
+        /** @var User[] $savedReturn */
+        $savedReturn = [];
+        DbHelper::batchSave($inputModels, [], DbHelper::SAVE_MODE_AUTO, $savedReturn);
+
+        /** @var User[] $savedUsers */
+        $savedUsers = $savedReturn['inserted'];
+
+        $department = new Department();
+        $department->name = "Department testBatchSaveForNoIncrementIdField";
+        $department->save(false);
+
+        /** @var UserDepartmentAssignment[] $inputModels */
+        $inputModels = [];
+        $ids = [];
+        foreach($savedUsers as $savedUser)
+        {
+            $m = $inputModels[] = new UserDepartmentAssignment();
+            $m->userId = $savedUser->id;
+            $m->departmentId = $department->id;
+            $m->_isInserting = true;
+            $ids[] = ['userId'=>$savedUser->id,'departmentId'=>$department->id];
+        }
+
+        DbHelper::batchSave($inputModels, [], DbHelper::SAVE_MODE_AUTO);
+
+        $return = DbHelper::batchDelete(UserDepartmentAssignment::tableName(), $ids);
+        $this->assertEquals(10, $return);
     }
 }
