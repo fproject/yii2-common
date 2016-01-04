@@ -21,7 +21,7 @@ class DbHelperTest extends TestCase
         $this->assertInstanceOf('yii\db\Command', $cmd);
     }
 
-    public function testBatchSave001()
+    public function testBatchSaveNotReturnModels()
     {
         /** @var User[] $models */
         $models = [];
@@ -49,7 +49,7 @@ class DbHelperTest extends TestCase
         $this->assertEquals($models[9]->username, $lastUser->username);
     }
 
-    public function testBatchSave002()
+    public function testBatchSaveReturnModels()
     {
 
         /** @var User[] $inputModels */
@@ -216,6 +216,84 @@ class DbHelperTest extends TestCase
 
         $sql = 'SELECT * FROM '.UserDepartmentAssignment::tableName().' WHERE '.$sql;
 
+        $return = UserDepartmentAssignment::findBySql($sql)->count();
+        $this->assertEquals(0, $return);
+    }
+
+    public function testBatchSaveForUpdatableKeyModel()
+    {
+        /** @var User[] $inputModels */
+        $inputModels = [];
+        for($i=0;$i<4;$i++)
+        {
+            $m = $inputModels[] = new User();
+            $m->username = "New User $i-".rand(10000,99999);
+            $m->password = $m->username;
+        }
+
+        /** @var User[] $savedReturn */
+        $savedReturn = [];
+        DbHelper::batchSave($inputModels, [], DbHelper::SAVE_MODE_AUTO, $savedReturn);
+
+        /** @var User[] $savedUsers */
+        $savedUsers = $savedReturn['inserted'];
+
+        $department = new Department();
+        $department->name = "Department testBatchSaveForUpdatableKeyModel";
+        $department1 = new Department();
+        $department1->name = "Department testBatchSaveForUpdatableKeyModel";
+
+        $departmentSavedReturn = [];
+        DbHelper::batchSave([$department,$department1], [], DbHelper::SAVE_MODE_AUTO, $departmentSavedReturn);
+        /** @var Department $department */
+        $department = $departmentSavedReturn['inserted'][0];
+        /** @var Department $department1 */
+        $department1 = $departmentSavedReturn['inserted'][1];
+
+        /** @var UserDepartmentAssignment[] $inputModels */
+        $inputModels = [];
+        $ids = [];
+        $sql = '';
+        for($i=0;$i<3;$i++)
+        {
+            $savedUser = $savedUsers[$i];
+            $m = $inputModels[] = new UserDepartmentAssignment();
+            $m->userId = $savedUser->id;
+            $m->departmentId = $department->id;
+            $ids[] = ['userId'=>$savedUser->id,'departmentId'=>$department->id];
+            if($sql != '')
+                $sql = $sql.' OR ';
+            $sql = $sql."(`userId`=$savedUser->id AND `departmentId`=$department->id)";
+        }
+
+        DbHelper::batchSave($inputModels);
+
+        $sql = 'SELECT * FROM '.UserDepartmentAssignment::tableName().' WHERE '.$sql;
+
+        /** @var UserDepartmentAssignment[] $savedAssignments */
+        $savedAssignments = UserDepartmentAssignment::findBySql($sql)->all();
+        $this->assertEquals(3, count($savedAssignments));
+
+        $savedAssignments[0]->departmentId = $department1->id;
+        $savedAssignments[1]->departmentId = $department1->id;
+        $savedAssignments[2]->departmentId = $department1->id;
+
+        $savedAssignments[2]->userId = $savedUsers[3]->id;
+
+        DbHelper::batchSave($savedAssignments);
+        $sql1 = '';
+        foreach($savedAssignments as $savedAssignment)
+        {
+            if($sql1 != '')
+                $sql1 = $sql1.' OR ';
+            $sql1 = $sql1."(`userId`=$savedAssignment->userId AND `departmentId`=$savedAssignment->departmentId)";
+        }
+        $sql1 = 'SELECT * FROM '.UserDepartmentAssignment::tableName().' WHERE '.$sql1;
+
+        $sql = 'SELECT * FROM '.UserDepartmentAssignment::tableName().' WHERE '.$sql;
+
+        $return = UserDepartmentAssignment::findBySql($sql1)->count();
+        $this->assertEquals(3, $return);
         $return = UserDepartmentAssignment::findBySql($sql)->count();
         $this->assertEquals(0, $return);
     }
