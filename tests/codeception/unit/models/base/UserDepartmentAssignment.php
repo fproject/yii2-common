@@ -63,6 +63,18 @@ class UserDepartmentAssignment extends \yii\db\ActiveRecord implements IUpdatabl
     public $oldKey;
 
     /**
+     * This method is called when the AR object is created and populated with the query result.
+     * The default implementation will trigger an [[EVENT_AFTER_FIND]] event.
+     * When overriding this method, make sure you call the parent implementation to ensure the
+     * event is triggered.
+     */
+    public function afterFind()
+    {
+        $this->oldKey = $this->getPrimaryKey(true);
+        parent::afterFind();
+    }
+
+    /**
      * Returns the old primary key value.
      * This refers to the primary key value that is populated from the active record
      * after executing a find method (e.g. find(), findOne()).
