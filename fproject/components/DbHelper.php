@@ -18,6 +18,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace fproject\components;
+use fproject\common\IUpdatableKeyModel;
 use Yii;
 use yii\db\Connection;
 use stdClass;
@@ -84,6 +85,8 @@ class DbHelper
         $insertModels = [];
         $updateData=[];
         $updateModels = [];
+        $updateKeyValues = [];
+        $updateCnt = 0;
         foreach ($models as $model)
         {
             if(!isset($tableSchema))
@@ -101,9 +104,9 @@ class DbHelper
             }
             else // $mode == SAVE_MODE_AUTO
             {
-                if(property_exists($model,'_isInserting'))
+                if($model instanceof IUpdatableKeyModel)
                 {
-                    $inserting = (bool)$model->{'_isInserting'};
+                    $inserting = empty($model->getOldKey());
                 }
                 else
                 {
@@ -135,14 +138,23 @@ class DbHelper
             {
                 $updateData[] = $model->toArray($attributeNames);
                 $updateModels[] = $model;
+                if($model instanceof IUpdatableKeyModel)
+                {
+                    $oldKey = $model->getOldKey();
+                    if(!empty($oldKey))
+                    {
+                        $updateKeyValues[$updateCnt] = $oldKey;
+                    }
+                }
+                $updateCnt++;
             }
         }
 
         $retObj = new stdClass();
 
-        if(count($updateData) > 0 && isset($tableSchema))
+        if($updateCnt > 0 && isset($tableSchema))
         {
-            self::updateMultiple($tableSchema->fullName, $updateData, array_keys($pks));
+            self::updateMultiple($tableSchema->fullName, $updateData, array_keys($pks), count($updateKeyValues) > 0 ? $updateKeyValues : null);
             $retObj->updateCount = count($updateData);
             if(isset($returnModels))
                 $returnModels['updated'] = $updateModels;
@@ -286,11 +298,13 @@ class DbHelper
      * @param array $data list data to be inserted, each value should be an array in format (column name=>column value).
      * If a key is not a valid column name, the corresponding value will be ignored.
      * @param mixed $pkNames Name or an array of names of primary key(s)
+     * @param array $pkValues The primary key-values array. If this parameter is null, the primary keys will be get from
+     * the corresponding field in records of $data array.
      * @return integer number of rows affected by the execution.
      */
-    public static function updateMultiple($table, $data, $pkNames)
+    public static function updateMultiple($table, $data, $pkNames, $pkValues=null)
     {
-        $command = self::createMultipleUpdateCommand($table, $data, $pkNames);
+        $command = self::createMultipleUpdateCommand($table, $data, $pkNames, $pkValues);
         return $command->execute();
     }
 
@@ -302,11 +316,13 @@ class DbHelper
      * @param array $data list data to be saved, each value should be an array in format (column name=>column value).
      * If a key is not a valid column name, the corresponding value will be ignored.
      * @param mixed $pkNames Name or an array of names of primary key(s)
-     * @param array $templates templates for the SQL parts.
+     * @param array $pkValues The primary key-values array. If this parameter is null, the primary keys will be get from
+     * the corresponding field in records of $data array.
+     * @param array $templates Templates for the SQL parts.
      * @throws \yii\db\Exception
-     * @return \yii\db\Command multiple update command
+     * @return \yii\db\Command Multiple update command
      */
-    public static function createMultipleUpdateCommand($table, $data, $pkNames, $templates=null)
+    public static function createMultipleUpdateCommand($table, $data, $pkNames, $pkValues=null, $templates=null)
     {
         if(is_null($templates))
         {
@@ -349,9 +365,32 @@ class DbHelper
 
         foreach($data as $rowKey=>$rowData)
         {
+            $hasPKValues = !empty($pkValues) && !empty($pkValues[$rowKey]);
+
+            if($hasPKValues)
+            {
+                $pkValue = $pkValues[$rowKey];
+                if(is_array($pkValue))
+                {
+                    foreach($pkValue as $n=>$v)
+                    {
+                        foreach($pkNames as $pk)
+                        {
+                            if (strcasecmp($n, $pk) == 0)
+                            {
+                                $params[':k_'.$n.'_'.$rowKey] = $v;
+                                $pkToColumnName[$pk]=$n;
+                                continue;
+                            }
+                        }
+                    }
+                }
+            }
+
             $columnNameValuePairs=[];
             foreach($rowData as $columnName=>$columnValue)
             {
+                $isPK = false;
                 if(is_array($pkNames))
                 {
                     foreach($pkNames as $pk)
@@ -360,7 +399,8 @@ class DbHelper
                         {
                             $params[':'.$columnName.'_'.$rowKey] = $columnValue;
                             $pkToColumnName[$pk]=$columnName;
-                            continue;
+                            $isPK = true;
+                            break;
                         }
                     }
                 }
@@ -368,18 +408,22 @@ class DbHelper
                 {
                     $params[':'.$columnName.'_'.$rowKey] = $columnValue;
                     $pkToColumnName[$pkNames]=$columnName;
-                    continue;
+                    $isPK = true;
                 }
-                /** @var \yii\db\ColumnSchema $column */
-                $column=$tableSchema->getColumn($columnName);
-                $paramValuePlaceHolder=':'.$columnName.'_'.$rowKey;
-                $params[$paramValuePlaceHolder]=$column->dbTypecast($columnValue);
 
-                $columnNameValuePairs[]=strtr($templates['columnAssignValue'],
-                    [
-                        '{{column}}'=>$quoteColumnNames[$columnName],
-                        '{{value}}'=>$paramValuePlaceHolder,
-                    ]);
+                if(!$isPK || $hasPKValues)
+                {
+                    /** @var \yii\db\ColumnSchema $column */
+                    $column=$tableSchema->getColumn($columnName);
+                    $paramValuePlaceHolder=':'.$columnName.'_'.$rowKey;
+                    $params[$paramValuePlaceHolder]=$column->dbTypecast($columnValue);
+
+                    $columnNameValuePairs[]=strtr($templates['columnAssignValue'],
+                        [
+                            '{{column}}'=>$quoteColumnNames[$columnName],
+                            '{{value}}'=>$paramValuePlaceHolder,
+                        ]);
+                }
             }
 
             //Skip all rows that don't have primary key value;
@@ -390,11 +434,14 @@ class DbHelper
                 {
                     if(!isset($pkToColumnName[$pk]))
                         continue;
+
+                    $pkValuePlaceHolder = $hasPKValues ? ':k_'.$pkToColumnName[$pk].'_'.$rowKey : ':'.$pkToColumnName[$pk].'_'.$rowKey;
+
                     if($rowUpdateCondition != '')
                         $rowUpdateCondition = $rowUpdateCondition.$templates['rowUpdateConditionJoin'];
                     $rowUpdateCondition = $rowUpdateCondition.strtr($templates['rowUpdateConditionExpression'], array(
                         '{{pkName}}'=>$pk,
-                        '{{pkValue}}'=>':'.$pkToColumnName[$pk].'_'.$rowKey,
+                        '{{pkValue}}'=>$pkValuePlaceHolder,
                     ));
                 }
             }
@@ -402,9 +449,12 @@ class DbHelper
             {
                 if(!isset($pkToColumnName[$pkNames]))
                     continue;
+
+                $pkValuePlaceHolder = $hasPKValues ? ':k_'.$pkToColumnName[$pkNames].'_'.$rowKey : ':'.$pkToColumnName[$pkNames].'_'.$rowKey;
+
                 $rowUpdateCondition = strtr($templates['rowUpdateConditionExpression'], array(
                     '{{pkName}}'=>$pkNames,
-                    '{{pkValue}}'=>':'.$pkToColumnName[$pkNames].'_'.$rowKey,
+                    '{{pkValue}}'=>$pkValuePlaceHolder,
                 ));
             }
 

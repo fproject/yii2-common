@@ -2,6 +2,7 @@
 
 namespace tests\codeception\unit\models\base;
 
+use fproject\common\IUpdatableKeyModel;
 use Yii;
 
 /**
@@ -13,7 +14,7 @@ use Yii;
  * @property User $user
  * @property Department $department
  */
-class UserDepartmentAssignment extends \yii\db\ActiveRecord
+class UserDepartmentAssignment extends \yii\db\ActiveRecord implements IUpdatableKeyModel
 {
     /**
      * @inheritdoc
@@ -59,5 +60,18 @@ class UserDepartmentAssignment extends \yii\db\ActiveRecord
         return $this->hasOne(User::className(), ['id' => 'departmentId']);
     }
 
-    public $_isInserting;
+    public $oldKey;
+
+    /**
+     * Returns the old primary key value.
+     * This refers to the primary key value that is populated from the active record
+     * after executing a find method (e.g. find(), findOne()).
+     * The value remains unchanged even if the primary key attribute is manually assigned with a different value.
+     * @return mixed the old primary key value. An array (column name=>column value) is returned if the primary key is composite.
+     * If primary key is not defined, null will be returned.
+     */
+    public function getOldKey()
+    {
+        return (array)$this->oldKey;
+    }
 }

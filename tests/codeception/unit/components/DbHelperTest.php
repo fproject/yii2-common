@@ -158,7 +158,6 @@ class DbHelperTest extends TestCase
             $m = $inputModels[] = new UserDepartmentAssignment();
             $m->userId = $savedUser->id;
             $m->departmentId = $department->id;
-            $m->_isInserting = true;
         }
 
         Debug::debug('Before saving 10 UserDepartmentAssignment records. '.Json::encode($inputModels));
@@ -204,7 +203,6 @@ class DbHelperTest extends TestCase
             $m = $inputModels[] = new UserDepartmentAssignment();
             $m->userId = $savedUser->id;
             $m->departmentId = $department->id;
-            $m->_isInserting = true;
             $ids[] = ['userId'=>$savedUser->id,'departmentId'=>$department->id];
             if($sql != '')
                 $sql = $sql.' OR ';
