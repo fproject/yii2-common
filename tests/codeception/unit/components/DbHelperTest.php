@@ -290,8 +290,6 @@ class DbHelperTest extends TestCase
         }
         $sql1 = 'SELECT * FROM '.UserDepartmentAssignment::tableName().' WHERE '.$sql1;
 
-        $sql = 'SELECT * FROM '.UserDepartmentAssignment::tableName().' WHERE '.$sql;
-
         $return = UserDepartmentAssignment::findBySql($sql1)->count();
         $this->assertEquals(3, $return);
         $return = UserDepartmentAssignment::findBySql($sql)->count();
