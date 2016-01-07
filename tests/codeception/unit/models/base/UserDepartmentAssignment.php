@@ -4,6 +4,7 @@ namespace tests\codeception\unit\models\base;
 
 use fproject\common\IUpdatableKeyModel;
 use fproject\components\ActiveRecord;
+use tests\codeception\unit\components\UpdatableKeyModelBehavior;
 use Yii;
 use yii\db\BaseActiveRecord;
 
@@ -64,25 +65,11 @@ class UserDepartmentAssignment extends ActiveRecord implements IUpdatableKeyMode
 
     public $oldKey;
 
-    /**
-     * This method is called when the AR object is created and populated with the query result.
-     * The default implementation will trigger an [[EVENT_AFTER_FIND]] event.
-     * When overriding this method, make sure you call the parent implementation to ensure the
-     * event is triggered.
-     */
-    public function afterFindHandler()
-    {
-        $this->oldKey = $this->getPrimaryKey(true);
-    }
 
-    /**
-     * (non-PHPDoc)
-     * @see \yii\base\Behavior::events()
-     */
-    public function events()
+    public function behaviors()
     {
         return [
-            BaseActiveRecord::EVENT_AFTER_FIND 		=> 'afterFindHandler',
+            'updatableKeyModel' => ['class' => UpdatableKeyModelBehavior::className()]
         ];
     }
 
