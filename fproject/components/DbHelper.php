@@ -18,6 +18,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace fproject\components;
+use Codeception\Util\Debug;
 use fproject\common\IUpdatableKeyModel;
 use Yii;
 use yii\db\Connection;
@@ -426,6 +427,7 @@ class DbHelper
                 }
             }
 
+
             //Skip all rows that don't have primary key value;
             if(is_array($pkNames))
             {
@@ -464,6 +466,8 @@ class DbHelper
                 '{{rowUpdateCondition}}'=>$rowUpdateCondition,
             ));
         }
+
+        Debug::debug(print_r($rowUpdateStatements,true));
 
         $sql=implode($templates['rowUpdateStatementGlue'], $rowUpdateStatements);
 
