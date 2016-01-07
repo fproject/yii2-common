@@ -280,7 +280,7 @@ class DbHelperTest extends TestCase
 
         $savedAssignments[2]->userId = $savedUsers[3]->id;
 
-        Debug::debug('Before batch-saving existing UserDepartmentAssignment records. '.Json::encode($savedAssignments));
+        Debug::debug('Before batch-saving existing UserDepartmentAssignment records. '.print_r($savedAssignments, true));
 
         DbHelper::batchSave($savedAssignments);
         $sql1 = '';
