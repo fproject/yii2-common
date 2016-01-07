@@ -33,6 +33,7 @@ class m150212_091806_create_tables_and_data extends Migration
             'userId' => "int(11)",
             'departmentId' => "int(11)",
         ]);
+        $this->addPrimaryKey('pk_user_department_assignment','user_department_assignment',['userId','departmentId']);
 
         $this->addForeignKey('fk_user_profile','user','profileId','user_profile','id');
 
