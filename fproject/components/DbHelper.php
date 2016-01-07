@@ -431,6 +431,7 @@ class DbHelper
             //Skip all rows that don't have primary key value;
             if(is_array($pkNames))
             {
+                Debug::debug(print_r($pkNames,true));
                 $rowUpdateCondition = '';
                 foreach($pkNames as $pk)
                 {
@@ -466,8 +467,6 @@ class DbHelper
                 '{{rowUpdateCondition}}'=>$rowUpdateCondition,
             ));
         }
-
-        Debug::debug(print_r($rowUpdateStatements,true));
 
         $sql=implode($templates['rowUpdateStatementGlue'], $rowUpdateStatements);
 
