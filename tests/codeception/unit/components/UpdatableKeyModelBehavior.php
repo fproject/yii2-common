@@ -19,6 +19,7 @@
 
 namespace tests\codeception\unit\components;
 
+use fproject\common\IUpdatableKeyModel;
 use Yii;
 use yii\base\Behavior;
 use yii\db\BaseActiveRecord;
@@ -40,7 +41,7 @@ use yii\db\BaseActiveRecord;
  * }
  *
  *
- * @property BaseActiveRecord owner
+ * @property BaseActiveRecord|IUpdatableKeyModel owner
  */
 class UpdatableKeyModelBehavior extends Behavior
 {
@@ -53,7 +54,7 @@ class UpdatableKeyModelBehavior extends Behavior
 	 */
 	public function afterFindHandler()
 	{
-		$this->oldKey = $this->owner->getPrimaryKey(true);
+		$this->owner->oldKey = $this->owner->getPrimaryKey(true);
 	}
 
 	/**
