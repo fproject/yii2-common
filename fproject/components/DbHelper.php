@@ -18,7 +18,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace fproject\components;
-use Codeception\Util\Debug;
 use fproject\common\IUpdatableKeyModel;
 use Yii;
 use yii\db\Connection;
@@ -325,7 +324,6 @@ class DbHelper
      */
     public static function createMultipleUpdateCommand($table, $data, $pkNames, $pkValues=null, $templates=null)
     {
-        Debug::debug($pkNames);
         if(is_null($templates))
         {
             $templates = [
@@ -427,7 +425,6 @@ class DbHelper
                         ]);
                 }
             }
-
 
             //Skip all rows that don't have primary key value;
             if(is_array($pkNames))
