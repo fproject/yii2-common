@@ -63,16 +63,6 @@ class UserDepartmentAssignment extends ActiveRecord implements IUpdatableKeyMode
         return $this->hasOne(User::className(), ['id' => 'departmentId']);
     }
 
-    public $oldKey;
-
-
-    public function behaviors()
-    {
-        return [
-            'updatableKeyModel' => ['class' => UpdatableKeyModelBehavior::className()]
-        ];
-    }
-
     /**
      * Returns the old primary key value.
      * This refers to the primary key value that is populated from the active record
@@ -83,6 +73,9 @@ class UserDepartmentAssignment extends ActiveRecord implements IUpdatableKeyMode
      */
     public function getOldKey()
     {
-        return (array)$this->oldKey;
+        return [
+            'userId' => $this->getOldAttribute('userId'),
+            'departmentId' => $this->getOldAttribute('departmentId'),
+        ];
     }
 }
