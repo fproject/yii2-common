@@ -5,6 +5,7 @@ namespace tests\codeception\unit\models\base;
 use fproject\common\IUpdatableKeyModel;
 use fproject\components\ActiveRecord;
 use Yii;
+use yii\db\BaseActiveRecord;
 
 /**
  * This is the model class for table "user_department_assignment".
@@ -69,10 +70,20 @@ class UserDepartmentAssignment extends ActiveRecord implements IUpdatableKeyMode
      * When overriding this method, make sure you call the parent implementation to ensure the
      * event is triggered.
      */
-    public function afterFind()
+    public function afterFindHandler()
     {
         $this->oldKey = $this->getPrimaryKey(true);
-        parent::afterFind();
+    }
+
+    /**
+     * (non-PHPDoc)
+     * @see \yii\base\Behavior::events()
+     */
+    public function events()
+    {
+        return [
+            BaseActiveRecord::EVENT_AFTER_FIND 		=> 'afterFindHandler',
+        ];
     }
 
     /**
