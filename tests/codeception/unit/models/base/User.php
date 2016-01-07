@@ -2,6 +2,7 @@
 
 namespace tests\codeception\unit\models\base;
 
+use fproject\components\ActiveRecord;
 use Yii;
 
 /**
@@ -18,7 +19,7 @@ use Yii;
  * @property Department $department
  * @property UserProfile $profile
  */
-class User extends \yii\db\ActiveRecord
+class User extends ActiveRecord
 {
     /**
      * @inheritdoc

@@ -3,6 +3,7 @@
 namespace tests\codeception\unit\models\base;
 
 use fproject\common\IUpdatableKeyModel;
+use fproject\components\ActiveRecord;
 use Yii;
 
 /**
@@ -14,7 +15,7 @@ use Yii;
  * @property User $user
  * @property Department $department
  */
-class UserDepartmentAssignment extends \yii\db\ActiveRecord implements IUpdatableKeyModel
+class UserDepartmentAssignment extends ActiveRecord implements IUpdatableKeyModel
 {
     /**
      * @inheritdoc
