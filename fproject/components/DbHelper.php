@@ -325,6 +325,7 @@ class DbHelper
      */
     public static function createMultipleUpdateCommand($table, $data, $pkNames, $pkValues=null, $templates=null)
     {
+        Debug::debug($pkNames);
         if(is_null($templates))
         {
             $templates = [
@@ -431,7 +432,6 @@ class DbHelper
             //Skip all rows that don't have primary key value;
             if(is_array($pkNames))
             {
-                Debug::debug(print_r($pkNames,true));
                 $rowUpdateCondition = '';
                 foreach($pkNames as $pk)
                 {
