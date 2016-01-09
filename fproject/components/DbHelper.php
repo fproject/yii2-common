@@ -145,10 +145,14 @@ class DbHelper
             {
                 $data = $model->toArray($attributeNames);
 
-                foreach($pks as $pkName=>$pkValue)
+                if(empty($oldKey))
                 {
-                    unset($data[$pkName]);
+                    foreach($pks as $pkName=>$pkValue)
+                    {
+                        unset($data[$pkName]);
+                    }
                 }
+
                 $insertData[] = $data;
                 $insertModels[] = $model;
             }
