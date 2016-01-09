@@ -73,9 +73,6 @@ class UserDepartmentAssignment extends ActiveRecord implements IUpdatableKeyMode
      */
     public function getOldKey()
     {
-        return [
-            'userId' => $this->getOldAttribute('userId'),
-            'departmentId' => $this->getOldAttribute('departmentId'),
-        ];
+        return $this->getOldPrimaryKey(true);
     }
 }
