@@ -93,6 +93,7 @@ class DbHelper
                 $tableSchema = $model->getTableSchema();
 
             $pks = $model->getPrimaryKey(true);
+            $oldKey = null;
 
             if($mode==self::SAVE_MODE_INSERT_ALL)
             {
@@ -115,6 +116,7 @@ class DbHelper
                             if(empty($v))
                             {
                                 $inserting = true;
+                                $oldKey = null;
                                 break;
                             }
                         }
@@ -154,13 +156,9 @@ class DbHelper
             {
                 $updateData[] = $model->toArray($attributeNames);
                 $updateModels[] = $model;
-                if($model instanceof IUpdatableKeyModel)
+                if(!empty($oldKey))
                 {
-                    $oldKey = $model->getOldKey();
-                    if(!empty($oldKey))
-                    {
-                        $updateKeyValues[$updateCnt] = $oldKey;
-                    }
+                    $updateKeyValues[$updateCnt] = $oldKey;
                 }
                 $updateCnt++;
             }
