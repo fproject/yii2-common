@@ -18,7 +18,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace fproject\components;
-use Codeception\Util\Debug;
 use fproject\common\IUpdatableKeyModel;
 use Yii;
 use yii\db\Connection;
@@ -72,7 +71,6 @@ class DbHelper
      */
     public static function batchSave($models, $attributeNames=[], $mode=self::SAVE_MODE_AUTO, &$returnModels=null)
     {
-        Debug::debug("batchSave.....");
         Yii::trace('batchSave()','application.DbHelper');
         if(is_null($models) || empty($models))
             return null;
@@ -96,9 +94,6 @@ class DbHelper
 
             $pks = $model->getPrimaryKey(true);
 
-            Debug::debug('$pks:');
-            Debug::debug($pks);
-
             if($mode==self::SAVE_MODE_INSERT_ALL)
             {
                 $inserting = true;
@@ -111,9 +106,23 @@ class DbHelper
             {
                 if($model instanceof IUpdatableKeyModel)
                 {
-                    Debug::debug('$model->getOldKey():');
-                    Debug::debug($model->getOldKey());
-                    $inserting = empty($model->getOldKey());
+                    $oldKey = $model->getOldKey();
+                    if(is_array($oldKey) && !empty($oldKey))
+                    {
+                        $inserting = false;
+                        foreach($oldKey as $k=>$v)
+                        {
+                            if(empty($v))
+                            {
+                                $inserting = true;
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        $inserting = empty($oldKey);
+                    }
                 }
                 else
                 {
