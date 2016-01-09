@@ -140,6 +140,11 @@ class DbHelperTest extends TestCase
 
         $this->assertArrayHasKey('inserted', $savedReturn);
         $this->assertArrayNotHasKey('updated', $savedReturn);
+
+        $this->assertObjectNotHasAttribute('updateCount', $return);
+        $this->assertObjectHasAttribute('insertCount', $return);
+        $this->assertEquals(10, $return->insertCount);
+
         /** @var User[] $savedUsers */
         $savedUsers = $savedReturn['inserted'];
 
@@ -164,7 +169,7 @@ class DbHelperTest extends TestCase
 
         $return = DbHelper::batchSave($inputModels, [], DbHelper::SAVE_MODE_AUTO);
 
-        Debug::debug('Batch saved 10 UserDepartmentAssignment records. '.Json::encode($return));
+        Debug::debug('Batch saved 10 UserDepartmentAssignment records. return='.Json::encode($return));
 
         $this->assertObjectNotHasAttribute('updateCount', $return);
         $this->assertObjectHasAttribute('insertCount', $return);
@@ -212,6 +217,9 @@ class DbHelperTest extends TestCase
         DbHelper::batchSave($inputModels, [], DbHelper::SAVE_MODE_AUTO);
 
         $return = DbHelper::batchDelete(UserDepartmentAssignment::tableName(), $ids);
+
+        Debug::debug('Batch insert 10 UserDepartmentAssignment records. return='.Json::encode($return));
+
         $this->assertEquals(10, $return);
 
         $sql = 'SELECT * FROM '.UserDepartmentAssignment::tableName().' WHERE '.$sql;
