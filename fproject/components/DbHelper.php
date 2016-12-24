@@ -53,10 +53,10 @@ class DbHelper
      * @param array $attributeNames name list of attributes that need to be update. Defaults to empty,
      * meaning all fields of corresponding active record will be saved.
      * This parameter is ignored in the case of insertion
-     * @param int $mode the save mode flag.
-     * If this flag value is set to 0, any model that have a PK value is NULL will be inserted, otherwise it will be update.
-     * If this flag value is set to 1, all models will be inserted regardless to PK values.
-     * If this flag value is set to 2, all models will be updated regardless to PK values.
+     * @param mixed $mode the save mode flag or an array of save mode flags.
+     * If this flag value is set to 0 (SAVE_MODE_AUTO), any model that have a PK value is NULL will be inserted, otherwise it will be update.
+     * If this flag value is set to 1 (SAVE_MODE_INSERT_ALL), all models will be inserted regardless to PK values.
+     * If this flag value is set to 2 (SAVE_MODE_UPDATE_ALL), all models will be updated regardless to PK values.
      * @param array $returnModels An associative array contains two element:
      * ```php
      *      [
@@ -87,7 +87,7 @@ class DbHelper
         $updateModels = [];
         $updateKeyValues = [];
         $updateCnt = 0;
-        foreach ($models as $model)
+        foreach ($models as $index=>$model)
         {
             if(!isset($tableSchema))
                 $tableSchema = $model->getTableSchema();
@@ -95,7 +95,15 @@ class DbHelper
             $pks = $model->getPrimaryKey(true);
             $oldKey = null;
 
-            if($mode==self::SAVE_MODE_INSERT_ALL)
+            if(is_array($mode) && $mode[$index] == self::SAVE_MODE_INSERT_ALL)
+            {
+                $inserting = true;
+            }
+            elseif(is_array($mode) && $mode[$index] == self::SAVE_MODE_UPDATE_ALL)
+            {
+                $inserting = false;
+            }
+            elseif($mode==self::SAVE_MODE_INSERT_ALL)
             {
                 $inserting = true;
             }
