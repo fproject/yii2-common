@@ -41,8 +41,8 @@ class DbHelper
     }
 
     const SAVE_MODE_AUTO = 0;
-    const SAVE_MODE_INSERT_ALL = 1;
-    const SAVE_MODE_UPDATE_ALL = 2;
+    const SAVE_MODE_INSERT = 1;
+    const SAVE_MODE_UPDATE = 2;
 
     /**
      * Save a list of data to a table, each row data may be inserted or updated depend on its existence.
@@ -55,8 +55,8 @@ class DbHelper
      * This parameter is ignored in the case of insertion
      * @param mixed $mode the save mode flag or an array of save mode flags.
      * If this flag value is set to 0 (SAVE_MODE_AUTO), any model that have a PK value is NULL will be inserted, otherwise it will be update.
-     * If this flag value is set to 1 (SAVE_MODE_INSERT_ALL), all models will be inserted regardless to PK values.
-     * If this flag value is set to 2 (SAVE_MODE_UPDATE_ALL), all models will be updated regardless to PK values.
+     * If this flag value is set to 1 (SAVE_MODE_INSERT), all models will be inserted regardless to PK values.
+     * If this flag value is set to 2 (SAVE_MODE_UPDATE), all models will be updated regardless to PK values.
      * @param array $returnModels An associative array contains two element:
      * ```php
      *      [
@@ -97,13 +97,13 @@ class DbHelper
 
             if(is_array($mode) && array_key_exists($index,$mode))
             {
-                $inserting = $mode[$index] == self::SAVE_MODE_INSERT_ALL;
+                $inserting = $mode[$index] == self::SAVE_MODE_INSERT;
             }
-            elseif($mode==self::SAVE_MODE_INSERT_ALL)
+            elseif($mode==self::SAVE_MODE_INSERT)
             {
                 $inserting = true;
             }
-            elseif($mode==self::SAVE_MODE_UPDATE_ALL)
+            elseif($mode==self::SAVE_MODE_UPDATE)
             {
                 $inserting = false;
             }
