@@ -55,8 +55,8 @@ class DbHelper
      * This parameter is ignored in the case of insertion
      * @param mixed $mode the save mode flag or an array of save mode flags.
      * If this flag value is set to 0 (SAVE_MODE_AUTO), any model that have a PK value is NULL will be inserted, otherwise it will be update.
-     * If this flag value is set to 1 (SAVE_MODE_INSERT), all models will be inserted regardless to PK values.
-     * If this flag value is set to 2 (SAVE_MODE_UPDATE), all models will be updated regardless to PK values.
+     * If this flag value is set to 1 (SAVE_MODE_INSERT), the model(s) will be inserted regardless to PK values.
+     * If this flag value is set to 2 (SAVE_MODE_UPDATE), the model(s) will be updated regardless to PK values.
      * @param array $returnModels An associative array contains two element:
      * ```php
      *      [
