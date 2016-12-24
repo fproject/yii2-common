@@ -95,13 +95,9 @@ class DbHelper
             $pks = $model->getPrimaryKey(true);
             $oldKey = null;
 
-            if(is_array($mode) && $mode[$index] == self::SAVE_MODE_INSERT_ALL)
+            if(is_array($mode) && array_key_exists($index,$mode))
             {
-                $inserting = true;
-            }
-            elseif(is_array($mode) && $mode[$index] == self::SAVE_MODE_UPDATE_ALL)
-            {
-                $inserting = false;
+                $inserting = $mode[$index] == self::SAVE_MODE_INSERT_ALL;
             }
             elseif($mode==self::SAVE_MODE_INSERT_ALL)
             {
