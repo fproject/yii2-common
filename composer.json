@@ -28,7 +28,25 @@
     "yiisoft/yii2-codeception" : "*"
   },
   "config" : {
-    "process-timeout" : 1800
+    "preferred-install": "dist",
+    "github-protocols": ["https","http"],
+    "github-oauth": {
+      "github.com": "1978ac86a7fd77ae45727ef1b39239d840c776f7"
+    },
+    "process-timeout" : 1800,
+    "fxp-asset": {
+      "installer-paths": {
+        "npm-asset-library": "vendor/npm",
+        "bower-asset-library": "vendor/bower"
+      },
+      "repositories": [
+        {
+          "type": "bower-vcs",
+          "url": "https://github.com/RobinHerbots/Inputmask.git",
+          "name": "bower-asset/jquery.inputmask"
+        }
+      ]
+    }
   },
   "autoload": {
     "psr-4": {
