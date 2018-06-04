@@ -68,6 +68,8 @@ class DbHelper
      * - The 'lastId' field is the last model ID (auto-incremental primary key) inserted.
      * - The 'insertCount' is the number of rows inserted.
      * - The 'updateCount' is the number of rows updated.
+     * @throws \yii\base\InvalidConfigException
+     * @throws Exception
      */
     public static function batchSave($models, $attributeNames=[], $mode=self::SAVE_MODE_AUTO, &$returnModels=null)
     {
@@ -199,6 +201,7 @@ class DbHelper
      * Each element should be an array in form ['column1'=>'value1', 'column2'=>'value2',...]
      *
      * @return int the number of row deleted
+     * @throws Exception
      */
     public static function batchDelete($table, $data)
     {
@@ -258,6 +261,7 @@ class DbHelper
      * @param array $data list data to be inserted, each value should be an array in format (column name=>column value).
      * If a key is not a valid column name, the corresponding value will be ignored.
      * @return integer number of rows affected by the execution.
+     * @throws Exception
      */
     public static function insertMultiple($table, $data)
     {
@@ -315,6 +319,7 @@ class DbHelper
      * @param array $pkValues The primary key-values array. If this parameter is null, the primary keys will be get from
      * the corresponding field in records of $data array.
      * @return integer number of rows affected by the execution.
+     * @throws Exception
      */
     public static function updateMultiple($table, $data, $pkNames, $pkValues=null)
     {
