@@ -30,9 +30,6 @@
   "config" : {
     "preferred-install": "dist",
     "github-protocols": ["https","http"],
-    "github-oauth": {
-      "github.com": "1978ac86a7fd77ae45727ef1b39239d840c776f7"
-    },
     "process-timeout" : 1800,
     "fxp-asset": {
       "installer-paths": {
