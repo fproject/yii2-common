@@ -43,6 +43,8 @@ class ActiveRecord extends \yii\db\ActiveRecord
      * - The 'lastId' field is the last model ID (auto-incremental primary key) inserted.
      * - The 'insertCount' is the number of rows inserted.
      * - The 'updateCount' is the number of rows updated.
+     * @throws \yii\base\InvalidConfigException
+     * @throws \yii\db\Exception
      */
     public static function batchSave($models, $attributeNames=[], $mode=DbHelper::SAVE_MODE_AUTO)
     {
