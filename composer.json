@@ -51,5 +51,11 @@
     "psr-4": {
       "fproject\\": "fproject/"
     }
+  },
+  "extra": {
+    "asset-vcs-driver-options": {
+      "github-no-api": true
+    },
+    "asset-pattern-skip-version": "(-build|-patch)"
   }
 }
