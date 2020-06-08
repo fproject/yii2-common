@@ -29,21 +29,22 @@
   },
   "config" : {
     "preferred-install": "dist",
-    "github-protocols": ["https", "http"],
+    "github-protocols": ["https","http"],
     "github-oauth": {
-
     },
-    "process-timeout": 1800,
+    "process-timeout" : 1800,
     "fxp-asset": {
       "installer-paths": {
         "npm-asset-library": "vendor/npm",
         "bower-asset-library": "vendor/bower"
       },
-      "repositories": [{
-        "type": "bower-vcs",
-        "url": "https://github.com/RobinHerbots/Inputmask.git",
-        "name": "bower-asset/jquery.inputmask"
-      }]
+      "repositories": [
+        {
+          "type": "bower-vcs",
+          "url": "https://github.com/RobinHerbots/Inputmask.git",
+          "name": "bower-asset/jquery.inputmask"
+        }
+      ]
     }
   },
   "autoload": {
